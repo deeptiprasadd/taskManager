@@ -1,8 +1,6 @@
-fastapi
-uvicorn
-pydantic
-scikit-learn
-pandas
-numpy
-python-multipart
+flask
+flask-cors
 firebase-admin
+requests
+schedule
+gunicorn
