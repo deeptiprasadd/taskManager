@@ -3,8 +3,8 @@ from firebase_admin import messaging, credentials
 from database import get_tokens
 import os
 
-# Path for Render deployment (secret file)
-SERVICE_ACCOUNT_PATH = "/opt/render/project/src/serviceAccountKey.json"
+# Correct Render secret file path
+SERVICE_ACCOUNT_PATH = "/etc/secrets/serviceAccountKey.json"
 
 # Initialize Firebase Admin only once
 if not firebase_admin._apps:
@@ -16,7 +16,6 @@ def send_push(title, body):
     if not tokens:
         return {"status": "no_tokens"}
 
-    # Create multicast message
     message = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=body),
         tokens=tokens
