@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>AI Task Planner</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0b0f14" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">AI Task Planner</div>
+    <button id="installBtn" class="ghost">Install</button>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Add Task</h2>
+      <form id="taskForm">
+        <input id="title" type="text" placeholder="Task title" required />
+        <input id="deadline" type="date" required />
+        <label class="slider">
+          <span>Importance</span>
+          <input id="importance" type="range" min="1" max="5" value="3" />
+          <output id="impOut">3</output>
+        </label>
+        <button class="primary" type="submit">Add</button>
+      </form>
+      <p id="estimate" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>Today’s Suggestions</h2>
+      <div id="top3" class="list empty">No tasks yet.</div>
+    </section>
+
+    <section class="card">
+      <h2>All Tasks</h2>
+      <div id="taskList" class="list empty">No tasks yet.</div>
+    </section>
+
+    <section class="card">
+      <h2>Notifications</h2>
+      <button id="notifyBtn" class="primary">Enable Push Notifications</button>
+      <p id="notifyStatus" class="muted">Push is off.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <button id="refreshBtn" class="ghost">↻ Refresh</button>
+  </footer>
+
+  <!-- Register service worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    }
+  </script>
+
+  <!-- App logic -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
