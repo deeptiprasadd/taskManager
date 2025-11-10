@@ -1,18 +1,29 @@
 import firebase_admin
 from firebase_admin import messaging, credentials
 from database import get_tokens
+import os
 
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+# Path for Render deployment (secret file)
+SERVICE_ACCOUNT_PATH = "/opt/render/project/src/serviceAccountKey.json"
+
+# Initialize Firebase Admin only once
+if not firebase_admin._apps:
+    cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
+    firebase_admin.initialize_app(cred)
 
 def send_push(title, body):
     tokens = get_tokens()
     if not tokens:
-        return
+        return {"status": "no_tokens"}
 
-    for token in tokens:
-        message = messaging.Message(
-            notification=messaging.Notification(title=title, body=body),
-            token=token
-        )
-        messaging.send(message)
+    # Create multicast message
+    message = messaging.MulticastMessage(
+        notification=messaging.Notification(title=title, body=body),
+        tokens=tokens
+    )
+
+    try:
+        response = messaging.send_multicast(message)
+        return {"success": response.success_count, "failure": response.failure_count}
+    except Exception as e:
+        return {"error": str(e)}
