@@ -1,7 +1,7 @@
 fastapi
 uvicorn
-pydantic
-firebase-admin
-schedule
-requests
+numpy
+pandas
+scikit-learn
 python-multipart
+pydantic
