@@ -1,18 +1,29 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import datetime
-from database import *
+from fastapi.middleware.cors import CORSMiddleware
+
+from database import create_tables, connect, add_token
 from model import predict_duration, train_model
 from push import send_push
-import sqlite3
 
+# Initialize Database
 create_tables()
 
+# Create App
 app = FastAPI()
 
-# ------------------------------
-# Request Models
-# ------------------------------
+# CORS Setup (allow frontend)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],   # You can restrict this to your domain later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ----------- MODELS -----------
+
 class TaskIn(BaseModel):
     title: str
     deadline: str
@@ -22,9 +33,14 @@ class Token(BaseModel):
     fcm_token: str
 
 
-# ------------------------------
-# Add Task
-# ------------------------------
+# ----------- ROUTES -----------
+
+@app.get("/")
+def home():
+    return {"message": "TaskPlanner Backend Running ✅"}
+
+
+# ✅ Add Task
 @app.post("/tasks")
 def add_task(t: TaskIn):
     hour = datetime.now().hour
@@ -33,20 +49,19 @@ def add_task(t: TaskIn):
     conn = connect()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO tasks (title, deadline, importance, created_at, predicted_minutes)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO tasks (title, deadline, importance, status, created_at, predicted_minutes)
+        VALUES (?, ?, ?, 'pending', ?, ?)
     """, (t.title, t.deadline, t.importance, datetime.now().isoformat(), predicted))
     conn.commit()
     conn.close()
 
+    # Push Notification
     send_push("New Task Added", t.title)
 
     return {"status": "ok", "predicted_minutes": predicted}
 
 
-# ------------------------------
-# Get All Tasks
-# ------------------------------
+# ✅ Get All Tasks
 @app.get("/tasks")
 def get_tasks():
     conn = connect()
@@ -76,27 +91,21 @@ def get_tasks():
     return result
 
 
-# ------------------------------
-# Register Device Token
-# ------------------------------
+# ✅ Register Device Token
 @app.post("/register")
-def register(t: Token):
+def register_token(t: Token):
     add_token(t.fcm_token)
     return {"status": "registered"}
 
 
-# ------------------------------
-# Train Model
-# ------------------------------
+# ✅ Train ML Model
 @app.post("/train")
 def train():
     train_model()
     return {"status": "trained"}
 
 
-# ------------------------------
-# Reminder Check
-# ------------------------------
+# ✅ Reminder Check (Auto push)
 @app.post("/reminders/check")
 def check_reminders():
     conn = connect()
@@ -110,8 +119,19 @@ def check_reminders():
 
     today = datetime.now().date()
     for title, deadline in tasks:
-        due = datetime.fromisoformat(deadline).date()
-        if due == today:
-            send_push("Reminder", f"Task due today: {title}")
+        try:
+            due = datetime.fromisoformat(deadline).date()
+            if due == today:
+                send_push("Reminder", f"Task due today: {title}")
+        except:
+            continue
 
     return {"status": "done"}
+
+
+# ✅ REQUIRED FOR RENDER DEPLOYMENT
+# Render launches using:  uvicorn app:app --host 0.0.0.0 --port 10000
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=10000)
