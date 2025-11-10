@@ -8,7 +8,7 @@ SERVICE_ACCOUNT_PATH = "/etc/secrets/serviceAccountKey.json"
 
 # Initialize Firebase Admin only once
 if not firebase_admin._apps:
-    cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
+    cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
 
 def send_push(title, body):
@@ -26,3 +26,4 @@ def send_push(title, body):
         return {"success": response.success_count, "failure": response.failure_count}
     except Exception as e:
         return {"error": str(e)}
+
