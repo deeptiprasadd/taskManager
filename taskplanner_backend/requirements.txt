@@ -3,9 +3,9 @@ uvicorn
 numpy
 pandas
 scikit-learn
+joblib
 python-multipart
 pydantic
-joblib
-
-
-
+pysqlite3-binary
+requests
+pyfcm
