@@ -9,3 +9,6 @@ pydantic
 pysqlite3-binary
 requests
 pyfcm
+firebase-admin
+
+
