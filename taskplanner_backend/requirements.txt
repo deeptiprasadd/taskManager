@@ -3,9 +3,8 @@ uvicorn
 numpy
 pandas
 scikit-learn
-joblib
 python-multipart
 pydantic
-requests
-firebase-admin
-pyfcm
+firebase_admin
+setuptools
+wheel
